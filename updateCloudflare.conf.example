@@ -1,0 +1,6 @@
+# Email to authenticate against cloudlflare
+email=your@email.address
+# Cloudflare API key.
+apiKey=aaabbbcccdddeeefffggghhhiiijjjkkklllm
+# Host to be updated.
+host=subdomain.domain.tld
