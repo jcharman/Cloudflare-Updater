@@ -5,7 +5,12 @@ Python script to update Cloudflare DNS records when a server's IP address change
 Get the script and make it executable:
 
     git clone https://github.com/jcharman/Cloudflare-Updater
+    cd Cloudflare-Updater
     chmod +x ./updateCloudflare.py
+Install the required modules
+
+    pip3 install -r requirements.txt
+
 Copy the example config file into place:
 
     cp ./updateCloudflare.conf.example updateCloudflare.conf
