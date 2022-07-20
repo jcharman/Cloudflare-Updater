@@ -68,78 +68,82 @@ def updateCloudflare(zone, email, apiKey, host, ip):
     else:
         print("Updating failed, errors were: " + str(result["errors"]))
 
-print(
-    '''
-    ------------------------------
-    Cloudflare updater
-    www.jakecharman.co.uk
-    ------------------------------
-    '''
-)
+def main():
+    print(
+        '''
+        ------------------------------
+        Cloudflare updater
+        www.jakecharman.co.uk
+        ------------------------------
+        '''
+    )
 
-# Get the directory of the script.
-scriptDir = os.path.dirname(os.path.realpath(__file__)) + "/"
+    # Get the directory of the script.
+    scriptDir = os.path.dirname(os.path.realpath(__file__)) + "/"
 
-# Read in parameters from the config file.
-try:
-    configFile = open(scriptDir + "updateCloudflare.conf", "r")
-except FileNotFoundError:
-    print("Configuration file does not exist.")
-    exit(1)
-
-configLines = configFile.readlines()
-for line in configLines:
-    if line[0] == "#":
-        continue
-    # Remove any spaces from the line then split it to an array on the = sign.
-    splitLn = line.replace(" ", "").strip().split('#')[0].split("=")
-
-    # Pull in the known config lines.
-    if (splitLn[0] == "email"):
-        authEmail = splitLn[1]
-    elif (splitLn[0] == "apiKey"):
-        apiKey = splitLn[1]
-    elif (splitLn[0] == "host"):
-        hostToUpdate = splitLn[1]
-    else:
-        # Error out on an unknown config line.
-        print("Unknown config: " + splitLn[0])
+    # Read in parameters from the config file.
+    try:
+        configFile = open(scriptDir + "updateCloudflare.conf", "r")
+    except FileNotFoundError:
+        print("Configuration file does not exist.")
         exit(1)
 
-# Get the Zone ID for the given hostname.
-zoneID = getZone(authEmail, apiKey, hostToUpdate)
+    configLines = configFile.readlines()
+    for line in configLines:
+        if line[0] == "#":
+            continue
+        # Remove any spaces from the line then split it to an array on the = sign.
+        splitLn = line.replace(" ", "").strip().split('#')[0].split("=")
 
-# Open the temp file.
-try:
-    file = open(scriptDir + 'updateCloudflare.lastip', 'r')
-    lastip = file.read()
-except FileNotFoundError:
-    lastip = ""
+        # Pull in the known config lines.
+        if (splitLn[0] == "email"):
+            authEmail = splitLn[1]
+        elif (splitLn[0] == "apiKey"):
+            apiKey = splitLn[1]
+        elif (splitLn[0] == "host"):
+            hostToUpdate = splitLn[1]
+        else:
+            # Error out on an unknown config line.
+            print("Unknown config: " + splitLn[0])
+            exit(1)
 
-if lastip == "":
-    storedIP = False
-    print("No stored IP... checking Cloudflare API")
-    cloudflareIP = checkCloudflare(zoneID, authEmail, apiKey, hostToUpdate)
-else:
-    storedIP = lastip
-    print("Stored IP is " + lastip)
+    # Get the Zone ID for the given hostname.
+    zoneID = getZone(authEmail, apiKey, hostToUpdate)
 
-# Get our external IP
-ip = requests.get('https://api.ipify.org').text
-print("Our current IP is " + ip)
-if storedIP:    
-    if ip == storedIP:
-        print("IP has not changed since last run... Exiting")
-        exit(0)
-    else: 
-        print("IP has changed since last run... Updating Cloudflare")
-        storeIP(ip)
-        updateCloudflare(zoneID, authEmail, apiKey, hostToUpdate, ip)
-else:
-    storeIP(ip)
-    if ip == cloudflareIP:
-        print("Cloudflare matches our current IP... Exiting")
-        exit(0)
+    # Open the temp file.
+    try:
+        file = open(scriptDir + 'updateCloudflare.lastip', 'r')
+        lastip = file.read()
+    except FileNotFoundError:
+        lastip = ""
+
+    if lastip == "":
+        storedIP = False
+        print("No stored IP... checking Cloudflare API")
+        cloudflareIP = checkCloudflare(zoneID, authEmail, apiKey, hostToUpdate)
     else:
-        print("Cloudflare IP does not match our current IP... Updating Cloudflare.")
-        updateCloudflare(zoneID, authEmail, apiKey, hostToUpdate, ip)
+        storedIP = lastip
+        print("Stored IP is " + lastip)
+
+    # Get our external IP
+    ip = requests.get('https://api.ipify.org').text
+    print("Our current IP is " + ip)
+    if storedIP:    
+        if ip == storedIP:
+            print("IP has not changed since last run... Exiting")
+            exit(0)
+        else: 
+            print("IP has changed since last run... Updating Cloudflare")
+            storeIP(ip)
+            updateCloudflare(zoneID, authEmail, apiKey, hostToUpdate, ip)
+    else:
+        storeIP(ip)
+        if ip == cloudflareIP:
+            print("Cloudflare matches our current IP... Exiting")
+            exit(0)
+        else:
+            print("Cloudflare IP does not match our current IP... Updating Cloudflare.")
+            updateCloudflare(zoneID, authEmail, apiKey, hostToUpdate, ip)
+
+if __name__ == "__main__":
+    main()
