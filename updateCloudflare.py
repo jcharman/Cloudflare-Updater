@@ -29,7 +29,7 @@ def getZone(email, apiKey, host):
     print("Could not find a Zone ID for the specified domain.")
     exit(1)
         
-def storeIP(ip):
+def storeIP(ip, scriptDir):
     # Store the given IP in the lastip file.
     file = open(scriptDir + 'updateCloudflare.lastip', 'w+')
     file.write(ip)
@@ -134,10 +134,10 @@ def main():
             exit(0)
         else: 
             print("IP has changed since last run... Updating Cloudflare")
-            storeIP(ip)
+            storeIP(ip, scriptDir)
             updateCloudflare(zoneID, authEmail, apiKey, hostToUpdate, ip)
     else:
-        storeIP(ip)
+        storeIP(ip, scriptDir)
         if ip == cloudflareIP:
             print("Cloudflare matches our current IP... Exiting")
             exit(0)
